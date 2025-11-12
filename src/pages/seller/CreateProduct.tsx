@@ -86,7 +86,7 @@ export default function CreateProduct() {
 
   return (
     <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-3xl">
+      <div className="container mx-auto px-4 ">
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Create Product - Step {step} of 4</CardTitle>
@@ -377,35 +377,61 @@ export default function CreateProduct() {
             )}
 
             {step === 2 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <Label>Evidence Images (Authentication Proof)</Label>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Upload images that prove the authenticity of your product
+                  <Label className="text-base font-semibold mb-4 block">Required Authentication Images</Label>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Please upload clear images for each requirement below:
                   </p>
-                  <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50">
-                    <div className="text-center">
-                      <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Click to upload evidence</span>
-                    </div>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleImageUpload(e, 'evidenceImages')}
-                    />
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 mt-4">
-                    {formData.evidenceImages.map((img, idx) => (
-                      <div key={idx} className="relative group">
-                        <img src={img} alt="" className="w-full h-24 object-cover rounded" />
-                        <button
-                          onClick={() => removeImage(idx, 'evidenceImages')}
-                          className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                  
+                  <div className="grid grid-cols-5 gap-4">
+                    {[
+                      { id: 'front', label: 'Front (Required)', required: true },
+                      { id: 'face', label: 'Face', required: false },
+                      { id: 'caseEngravings', label: 'Case Engravings', required: false },
+                      { id: 'styleSerialDate', label: 'Style / Serial / Date Code', required: false },
+                      { id: 'crown', label: 'Crown', required: false },
+                      { id: 'clasp', label: 'Clasp', required: false },
+                      { id: 'ovalEngraving', label: 'Clear Close Up of the Oval Engraving', required: false },
+                      { id: 'paperTags', label: 'Front & Back of All Paper Tags / Booklets', required: false },
+                      { id: 'thirdPartyOpinion', label: 'Already Received One Opinion? Upload Your 3rd Party Documentation(s) for Review', required: false },
+                      { id: 'additionalImages', label: 'Add Additional Images', required: false },
+                    ].map((requirement) => (
+                      <div key={requirement.id} className="border rounded-lg p-4 bg-card">
+                        <div className="flex items-center justify-between mb-3">
+                          <Label className="flex items-center gap-2 text-sm font-medium">
+                            {requirement.label}
+                            {requirement.required && <span className="text-red-500 font-bold text-lg">*</span>}
+                          </Label>
+                        </div>
+                        
+                        <label className="flex items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted/50 transition">
+                          <div className="text-center">
+                            <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">Click to upload</span>
+                          </div>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e, 'evidenceImages')}
+                          />
+                        </label>
+                        
+                        <div className="grid grid-cols-4 gap-2 mt-3">
+                          {formData.evidenceImages.map((img, idx) => (
+                            <div key={idx} className="relative group">
+                              <img src={img} alt="" className="w-full h-20 object-cover rounded" />
+                              <button
+                                onClick={() => removeImage(idx, 'evidenceImages')}
+                                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
