@@ -18,6 +18,28 @@ export interface Product {
   endTime?: number;
   rejectionReason?: string;
   createdAt: number;
+  // Handbag-specific fields
+  era?: string;
+  brand?: string;
+  numberOfItems?: string;
+  colour?: string;
+  material?: string;
+  condition?: string;
+  size?: string;
+  height?: string;
+  width?: string;
+  depth?: string;
+  // Shoe-specific fields
+  shoeEra?: string;
+  shoeBrand?: string;
+  shoeSize?: string;
+  shoeNewInBox?: string;
+  shoeColour?: string;
+  shoeGender?: string;
+  shoeMaterial?: string;
+  shoeVintage?: string;
+  shoeCondition?: string;
+  shoeMadeIn?: string;
 }
 
 export interface Bid {
