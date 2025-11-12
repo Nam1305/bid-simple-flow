@@ -132,6 +132,11 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       createdAt: Date.now(),
     };
     setOrders((prev) => [...prev, newOrder]);
+    
+    // Mark product as ended when order is created
+    setProducts((prev) =>
+      prev.map((p) => (p.id === order.productId ? { ...p, status: 'ended' } : p))
+    );
   };
 
   const updateOrderDeposit = (orderId: string) => {

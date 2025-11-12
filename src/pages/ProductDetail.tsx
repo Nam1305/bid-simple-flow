@@ -57,6 +57,11 @@ export default function ProductDetail() {
       return;
     }
 
+    if (product.status === 'ended') {
+      toast({ title: 'This auction has ended', variant: 'destructive' });
+      return;
+    }
+
     if (bidAmount < product.currentPrice + product.bidStep) {
       toast({
         title: 'Invalid bid amount',
@@ -79,6 +84,11 @@ export default function ProductDetail() {
   const handleBuyNow = () => {
     if (!user || user.role !== 'buyer') {
       toast({ title: 'Only buyers can purchase', variant: 'destructive' });
+      return;
+    }
+
+    if (product.status === 'ended') {
+      toast({ title: 'This product has been sold', variant: 'destructive' });
       return;
     }
 
@@ -143,33 +153,41 @@ export default function ProductDetail() {
                   </div>
                 )}
 
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(Number(e.target.value))}
-                      min={product.currentPrice + product.bidStep}
-                    />
-                    <Button onClick={handleBid} className="whitespace-nowrap">
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Place Bid
-                    </Button>
+                {product.status === 'ended' ? (
+                  <div className="p-4 bg-destructive/10 rounded text-center">
+                    <p className="font-semibold text-destructive">This auction has ended</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Minimum bid: ${product.currentPrice + product.bidStep} (step: ${product.bidStep})
-                  </p>
-                </div>
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          value={bidAmount}
+                          onChange={(e) => setBidAmount(Number(e.target.value))}
+                          min={product.currentPrice + product.bidStep}
+                        />
+                        <Button onClick={handleBid} className="whitespace-nowrap">
+                          <TrendingUp className="h-4 w-4 mr-2" />
+                          Place Bid
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Minimum bid: ${product.currentPrice + product.bidStep} (step: ${product.bidStep})
+                      </p>
+                    </div>
 
-                {product.buyNowPrice && (
-                  <Button
-                    onClick={handleBuyNow}
-                    variant="default"
-                    className="w-full bg-accent hover:bg-accent/90"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Buy Now - ${product.buyNowPrice}
-                  </Button>
+                    {product.buyNowPrice && (
+                      <Button
+                        onClick={handleBuyNow}
+                        variant="default"
+                        className="w-full bg-accent hover:bg-accent/90"
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Buy Now - ${product.buyNowPrice}
+                      </Button>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>

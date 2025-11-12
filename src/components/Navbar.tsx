@@ -18,7 +18,7 @@ export const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
             <Gavel className="h-6 w-6" />
-            AuctionHub
+            SnapBid
           </Link>
 
           <div className="flex items-center gap-4">
