@@ -20,13 +20,35 @@ export default function CreateProduct() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category: '',
+    category: '', // Will be either 'handbag' or 'shoe'
     images: [] as string[],
     evidenceImages: [] as string[],
     startPrice: 0,
     bidStep: 0,
     buyNowPrice: 0,
     duration: 60,
+    // Handbag-specific fields
+    era: '',
+    brand: '',
+    numberOfItems: '',
+    colour: '',
+    material: '',
+    condition: '',
+    size: '',
+    height: '',
+    width: '',
+    depth: '',
+    // Shoe-specific fields
+    shoeEra: '',
+    shoeBrand: '',
+    shoeSize: '',
+    shoeNewInBox: '',
+    shoeColour: '',
+    shoeGender: '',
+    shoeMaterial: '',
+    shoeVintage: '',
+    shoeCondition: '',
+    shoeMadeIn: '',
   });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'images' | 'evidenceImages') => {
