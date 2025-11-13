@@ -92,7 +92,7 @@ const auction = {
   id: "omega-moonwatch",
   title: "Vintage Omega Speedmaster 'Moonwatch' – 1969",
   image:
-    "https://images.unsplash.com/photo-1526403225435-6f2a18d5d914?q=80&w=1600&auto=format&fit=crop",
+    "/public/logos/brand_01.png",
   endsAt: inFuture(1000 * 60 * 60 * 2 + 1000 * 40),
   currentBid: 14250,
   bids: 38,

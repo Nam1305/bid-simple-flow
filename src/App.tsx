@@ -21,6 +21,7 @@ import Home3 from "./pages/home3";
 
 import ProductDetail2 from "./pages/ProductDetail2";
 import ProductDetail3 from "./pages/ProductDetail3"
+import { AppFooter } from "./components/AppFooter";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const AppRoutes = () => {
   return (
     <>
       <Navbar />
+
       <Routes>
 
         <Route path="/home2" element={<Home2 />} />
@@ -59,7 +61,7 @@ const AppRoutes = () => {
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
         <Route path="/" element={
           <ProtectedRoute>
-            <Home />
+            <Home3 />
           </ProtectedRoute>
         } />
         <Route path="/product/:id" element={
@@ -94,6 +96,8 @@ const AppRoutes = () => {
         } />
         <Route path="*" element={<NotFound />} />
       </Routes>
+
+      <AppFooter />        
     </>
   );
 };
