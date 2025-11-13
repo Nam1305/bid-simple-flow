@@ -1,0 +1,555 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Product, useData } from '@/contexts/DataContext';
+
+
+
+import {
+  Search,
+  Clock,
+  TrendingUp,
+  Gavel,
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  LogOut,
+  Heart
+} from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
+/**
+ * HOME (Integrated):
+ * - Reuses your DataContext products
+ * - Adds animated Hero (floating orbs), Live Bid Ticker, Featured Carousel,
+ *   Category filter chips, Sort (Ending/Highest), realtime countdown, and card hover animations.
+ * - Minimal dependencies: framer-motion + your existing shadcn/ui components
+ */
+
+// type Product = {
+//   id: string;
+//   title: string;
+//   category: string;
+//   description?: string;
+//   images: string[];
+//   status: 'active' | string;
+//   endTime?: number; // epoch ms
+//   currentPrice: number;
+//   buyNowPrice?: number;
+// };
+
+function AuctionCard({ a, onPlaceBid, onToggleWatch, watched }) {
+  return (
+    <Card className="group overflow-hidden border-none bg-gradient-to-b from-white/60 to-white/20 backdrop-blur-xl shadow-sm hover:shadow-xl transition-all duration-300">
+      <div className="relative aspect-[4/3] overflow-hidden">
+        <motion.img
+          src={a.image}
+          alt={a.title}
+          className="h-full w-full object-cover"
+          whileHover={{ scale: 1.05 }}
+          transition={{ type: "spring", stiffness: 120, damping: 14 }}
+        />
+        <div className="absolute left-2 top-2 flex gap-2">
+          {a.category && <Badge variant="secondary">{a.category}</Badge>}
+          <Badge className="gap-1"><Flame className="h-3 w-3"/> Hot</Badge>
+        </div>
+        <Button
+          variant={watched ? "secondary" : "ghost"}
+          size="icon"
+          className="absolute right-2 top-2 bg-white/70 hover:bg-white"
+          onClick={() => onToggleWatch(a.id)}
+          aria-label="Toggle watch"
+        >
+          <Heart className={`h-5 w-5 ${watched ? "fill-pink-500 text-pink-500" : ""}`} />
+        </Button>
+      </div>
+
+      <CardHeader className="pb-2">
+        <CardTitle className="line-clamp-1 flex items-center justify-between gap-2 text-base">
+          {a.title}
+          <span className="text-xs font-normal text-muted-foreground">
+            <Countdown endTime={a.endTime} />
+          </span>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="pt-0 pb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">Current bid</div>
+          <div className="text-lg font-semibold">{currency(a.currentBid)}</div>
+        </div>
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-xs text-muted-foreground">{a.bids} bids</div>
+          <Button size="sm" className="gap-2" onClick={() => onPlaceBid(a.id)}>
+            <Gavel className="h-4 w-4" /> Place bid
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// -------- utilities --------
+const currency = (n: number) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+
+function useCountdown(endTime?: number) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  if (!endTime) return { d: 0, h: 0, m: 0, s: 0, done: true };
+  const diff = Math.max(0, endTime - now);
+  const totalS = Math.floor(diff / 1000);
+  const d = Math.floor(totalS / 86400);
+  const h = Math.floor((totalS % 86400) / 3600);
+  const m = Math.floor((totalS % 3600) / 60);
+  const s = totalS % 60;
+  return { d, h, m, s, done: totalS <= 0 };
+}
+
+function useMarquee() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let x = 0;
+    let raf = 0;
+    const step = () => {
+      if (!paused) {
+        x -= 1; // speed
+        const w = el.scrollWidth / 2;
+        if (x <= -w) x = 0;
+        el.style.transform = `translateX(${x}px)`;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [paused]);
+  return { ref, paused, setPaused };
+}
+
+function FloatingOrb({ className = '', delay = 0, duration = 10 }: { className?: string; delay?: number; duration?: number }) {
+  return (
+    <motion.div
+      className={`absolute rounded-full blur-3xl opacity-40 ${className}`}
+      initial={{ y: -10, rotate: 0, scale: 1 }}
+      animate={{ y: [0, -20, 0], rotate: [0, 15, 0], scale: [1, 1.05, 1] }}
+      transition={{ repeat: Infinity, repeatType: 'mirror', duration, delay, ease: 'easeInOut' }}
+    />
+  );
+}
+
+function Countdown({ endTime }: { endTime?: number }) {
+  const { d, h, m, s, done } = useCountdown(endTime);
+  if (done) return <span className="text-red-600">Ended</span>;
+  return (
+    <span>
+      {d > 0 && `${d}d `}
+      {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')} left
+    </span>
+  );
+}
+
+
+
+// export function Navbar() {
+//   const { user, logout, isAuthenticated } = useAuth() as any;
+//   const navigate = useNavigate();
+
+//   const handleLogout = () => {
+//     logout?.();
+//     navigate('/auth');
+//   };
+
+//   return (
+//     <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/60 border-b border-white/40">
+//       <div className="container mx-auto px-4">
+//         <div className="flex h-16 items-center justify-between gap-4">
+//           <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary">
+//             <Gavel className="h-6 w-6" />
+//             SnapBid
+//           </Link>
+
+//           <div className="hidden md:flex items-center gap-6 text-sm text-slate-600">
+//             <a href="#how" className="hover:text-slate-900">How it works</a>
+//             <a href="#partners" className="hover:text-slate-900">Partners</a>
+//             <a href="#newsletter" className="hover:text-slate-900">New drops</a>
+//           </div>
+
+//           <div className="flex items-center gap-2">
+//             {isAuthenticated ? (
+//               <>
+//                 <Link to="/">
+//                   <Button variant="ghost" size="sm">Home</Button>
+//                 </Link>
+//                 {user?.role === 'seller' && (
+//                   <Link to="/seller/create">
+//                     <Button variant="ghost" size="sm">Create Product</Button>
+//                   </Link>
+//                 )}
+//                 {user?.role === 'admin' && (
+//                   <Link to="/admin/review">
+//                     <Button variant="ghost" size="sm">Review Panel</Button>
+//                   </Link>
+//                 )}
+//                 {user?.role === 'buyer' && (
+//                   <Link to="/orders">
+//                     <Button variant="ghost" size="sm">My Orders</Button>
+//                   </Link>
+//                 )}
+//                 <div className="flex items-center gap-2 pl-3 ml-1 border-l">
+//                   <User className="h-4 w-4" />
+//                   <span className="text-sm font-medium">{user?.name}</span>
+//                   <span className="text-xs text-muted-foreground">({user?.role})</span>
+//                   <Button variant="ghost" size="sm" onClick={handleLogout}>
+//                     <LogOut className="h-4 w-4" />
+//                   </Button>
+//                 </div>
+//               </>
+//             ) : (
+//               <Link to="/auth">
+//                 <Button>Login</Button>
+//               </Link>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// }
+
+export default function Home() {
+
+   const navigate = useNavigate();
+   const [watchedIds, setWatchedIds] = useState<Set<string>>(new Set());
+
+   const onToggleWatch = (id: string) => {
+   setWatchedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+   });
+   };
+
+// demo: đưa user sang trang chi tiết để đặt bid
+const onPlaceBid = (id: string) => {
+  navigate(`/product/${id}?action=bid`);
+};
+
+  const { products } = useData() as { products: Product[] };
+
+  // base dataset
+  const active = useMemo(
+    () => products.filter((p) => p.status === 'active'),
+    [products]
+  );
+
+  // search + category + sort
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<string>('All');
+  const [sortKey, setSortKey] = useState<'ending' | 'price'>('ending');
+
+  const categories = useMemo(() => {
+    const set = new Set<string>(active.map((p) => p.category).filter(Boolean));
+    return ['All', ...Array.from(set)];
+  }, [active]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = active.filter((p) =>
+      !q
+        ? true
+        : p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+    );
+    if (category !== 'All') list = list.filter((p) => p.category === category);
+    if (sortKey === 'ending') {
+      list = [...list].sort((a, b) => (a.endTime ?? Infinity) - (b.endTime ?? Infinity));
+    } else if (sortKey === 'price') {
+      list = [...list].sort((a, b) => b.currentPrice - a.currentPrice);
+    }
+    return list;
+  }, [active, search, category, sortKey]);
+
+  // featured carousel = top 3 by soonest ending
+  const featured = useMemo(() => {
+    return [...active]
+      .sort((a, b) => (a.endTime ?? Infinity) - (b.endTime ?? Infinity))
+      .slice(0, 3);
+  }, [active]);
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  const activeSlide = featured[carouselIdx];
+
+  useEffect(() => {
+    if (featured.length <= 1) return;
+    const t = setInterval(() => setCarouselIdx((i) => (i + 1) % featured.length), 5000);
+    return () => clearInterval(t);
+  }, [featured.length]);
+
+  // marquee
+  const { ref: marqueeRef, paused, setPaused } = useMarquee();
+  const marqueeItems = useMemo(() => {
+    const base = active.slice(0, 10).map((p) => ({
+      text: `${p.category} · ${p.title} · ${currency(p.currentPrice)}`,
+    }));
+    return [...base, ...base];
+  }, [active]);
+
+  return (
+    <div className="min-h-screen text-slate-900 bg-[radial-gradient(70%_70%_at_50%_0%,rgba(56,189,248,0.12),transparent_60%),linear-gradient(to_bottom_right,rgba(124,58,237,0.06),transparent)]">
+      <style>{`.marquee{will-change:transform;white-space:nowrap;}`}</style>
+
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <FloatingOrb className="w-64 h-64 bg-fuchsia-300 -left-16 top-10" delay={0.2} />
+        <FloatingOrb className="w-72 h-72 bg-sky-300 right-10 -top-10" delay={0.6} />
+        <FloatingOrb className="w-56 h-56 bg-violet-300 left-1/3 -bottom-16" delay={0.1} />
+
+        <div className="container mx-auto px-4 py-12 md:py-20 grid md:grid-cols-2 gap-10 items-center">
+          <div>
+            <motion.h1
+              className="text-4xl md:text-6xl font-black tracking-tight"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Discover & Win Rare <span className="bg-gradient-to-r from-fuchsia-500 to-sky-500 bg-clip-text text-transparent">Auctions</span>
+            </motion.h1>
+            <motion.p
+              className="mt-4 text-slate-600"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              Real-time bidding, curated drops, and exclusive collectibles from creators and brands you love.
+            </motion.p>
+
+            <div className="mt-6 flex gap-3">
+              <Button className="gap-2">
+                <Gavel className="h-4 w-4"/> Start Bidding
+              </Button>
+              <Button variant="outline" className="gap-2">
+                <TrendingUp className="h-4 w-4"/> Explore Live
+              </Button>
+            </div>
+
+            {/* Live ticker */}
+            <div className="mt-8 rounded-xl border bg-white/70 backdrop-blur p-3 overflow-hidden">
+              <div className="text-xs font-medium text-slate-500 mb-1 flex items-center gap-2"><Flame className="h-3 w-3"/> Live bids</div>
+              <div
+                className="marquee cursor-pointer"
+                ref={marqueeRef}
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
+              >
+                <div className="inline-flex gap-6 pr-6">
+                  {marqueeItems.map((m, i) => (
+                    <span key={i} className="text-sm text-slate-700">{m.text}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-2 text-[10px] text-slate-400">{paused ? 'Paused' : 'Hover to pause'}</div>
+            </div>
+          </div>
+
+          {/* Featured Carousel */}
+          <div>
+            <Card className="overflow-hidden border-none bg-white/60 backdrop-blur-2xl shadow-xl">
+              <div className="relative">
+                <AnimatePresence mode="wait">
+                  {activeSlide ? (
+                    <motion.img
+                      key={activeSlide.id}
+                      src={activeSlide.images?.[0] || ''}
+                      alt={activeSlide.title}
+                      className="aspect-video w-full object-cover"
+                      initial={{ opacity: 0, scale: 1.02 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  ) : (
+                    <motion.div key="placeholder" className="aspect-video w-full grid place-items-center bg-muted" initial={{opacity:0}} animate={{opacity:1}}>
+                      No featured items
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                {activeSlide && (
+                  <>
+                    <div className="absolute left-3 top-3 flex gap-2">
+                      <Badge variant="secondary" className="uppercase">Featured</Badge>
+                      {(activeSlide.endTime && activeSlide.endTime - Date.now() < 60*60*1000) && (
+                        <Badge className="uppercase">Ending Soon</Badge>
+                      )}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"/>
+                    <div className="absolute bottom-0 w-full p-4 text-white">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <div className="text-sm text-white/80">Current bid</div>
+                          <div className="text-2xl font-extrabold">{currency(activeSlide.currentPrice)}</div>
+                        </div>
+                        <div className="rounded-full bg-white/20 px-3 py-1 text-sm flex items-center gap-2">
+                          <Clock className="h-4 w-4"/>
+                          <Countdown endTime={activeSlide.endTime} />
+                        </div>
+                      </div>
+                      <div className="mt-2 text-lg font-semibold leading-tight line-clamp-2">{activeSlide.title}</div>
+                    </div>
+                  </>
+                )}
+
+                <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between p-2">
+                  <Button variant="secondary" size="icon" className="opacity-80" onClick={() => setCarouselIdx((i)=> (i - 1 + featured.length) % Math.max(1, featured.length))}>
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <Button variant="secondary" size="icon" className="opacity-80" onClick={() => setCarouselIdx((i)=> (i + 1) % Math.max(1, featured.length))}>
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+
+              <CardContent className="grid grid-cols-3 gap-3 p-3">
+                {featured.map((f, i) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setCarouselIdx(i)}
+                    className={`group relative aspect-video overflow-hidden rounded-lg ring-1 ring-black/5 ${i===carouselIdx? 'ring-2 ring-fuchsia-400' : ''}`}
+                  >
+                    {f.images?.[0] ? (
+                      <img src={f.images[0]} alt={f.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                    ) : (
+                      <div className="h-full w-full grid place-items-center bg-muted text-sm">No Image</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"/>
+                    <div className="absolute bottom-1 left-1 right-1 text-[10px] text-white line-clamp-1">{f.title}</div>
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CATEGORIES */}
+      <section className="container mx-auto px-4 mt-8">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-xl md:text-2xl font-bold">Browse by category</h2>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {categories.map((c) => (
+              <Badge
+                key={c}
+                className={`cursor-pointer ${category === c ? 'bg-slate-900' : ''}`}
+                variant={category === c ? 'default' : 'secondary'}
+                onClick={() => setCategory(c)}
+              >
+                {c}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* GRID */}
+      <section className="container mx-auto px-4 mt-6 pb-16">
+  {filtered.length === 0 ? (
+    <div className="text-center py-16">
+      <p className="text-muted-foreground text-lg">No active auctions at the moment</p>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {filtered.map((product) => (
+        <AuctionCard
+          key={product.id}
+          a={{
+            id: product.id,
+            title: product.title,
+            category: product.category,
+            image: product.images?.[0] ?? '',
+            endTime: product.endTime,
+            currentBid: product.currentPrice,
+            bids: product.bidsCount ?? product.bids ?? 0,
+          }}
+          watched={watchedIds.has(product.id)}
+          onToggleWatch={onToggleWatch}
+          onPlaceBid={onPlaceBid}
+        />
+      ))}
+    </div>
+  )}
+</section>
+
+
+      {/* HOW IT WORKS */}
+      <section id="how" className="container mx-auto px-4 mt-16 mb-12">
+        <h2 className="text-xl md:text-2xl font-bold">How it works</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          {[{icon:Gavel,title:'Bid in seconds',desc:'Create an account, verify, and start bidding instantly.'},{icon:TrendingUp,title:'Curated drops',desc:'We hand-pick authentic items from top creators and partners.'},{icon:Clock,title:'Transparent timers',desc:'Real-time countdowns and instant bid confirmations.'}].map((s, i)=> (
+            <motion.div
+              key={i}
+              className="rounded-2xl border bg-white/70 backdrop-blur p-5"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i*0.05 }}
+            >
+              <s.icon className="h-6 w-6"/>
+              <div className="mt-2 font-semibold">{s.title}</div>
+              <div className="text-sm text-slate-600">{s.desc}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* PARTNERS */}
+      <section id="partners" className="container mx-auto px-4 mb-16">
+        <div className="rounded-2xl border bg-white/60 backdrop-blur p-6">
+          <div className="text-sm text-slate-500 mb-3">Trusted by brands</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 opacity-70">
+            {Array.from({length:6}).map((_,i)=> (
+              <img key={i} className="mx-auto h-8 object-contain" src={`https://dummyimage.com/160x40/000/fff&text=Brand+${i+1}`} alt={`Brand ${i+1}`} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* NEWSLETTER */}
+      <section id="newsletter" className="container mx-auto max-w-3xl px-4 mb-20">
+        <Card className="border-none bg-gradient-to-r from-fuchsia-50 to-sky-50">
+          <CardHeader>
+            <h3 className="text-xl font-semibold">Don’t miss new drops</h3>
+          </CardHeader>
+          <CardContent>
+            <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e)=>e.preventDefault()}>
+              <Input name="email" type="email" placeholder="you@example.com" required />
+              <Button type="submit">Subscribe</Button>
+            </form>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t bg-white/60 backdrop-blur">
+        <div className="container mx-auto px-4 py-8 text-sm text-slate-600 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2"><Gavel className="h-4 w-4"/> © {new Date().getFullYear()} SnapBid</div>
+          <div className="flex items-center gap-4">
+            <a href="#">About</a>
+            <a href="#">Help</a>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

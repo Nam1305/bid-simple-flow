@@ -40,6 +40,10 @@ export interface Product {
   shoeVintage?: string;
   shoeCondition?: string;
   shoeMadeIn?: string;
+  // thêm mới
+
+  bidsCount?: number;
+  bids?: Bid[];
 }
 
 export interface Bid {

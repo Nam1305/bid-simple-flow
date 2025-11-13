@@ -16,6 +16,9 @@ import CreateProduct from "./pages/seller/CreateProduct";
 import ReviewPanel from "./pages/admin/ReviewPanel";
 import NotFound from "./pages/NotFound";
 
+import Home2 from "./pages/Home2"; 
+import Home3 from "./pages/home3";
+
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode; allowedRoles?: string[] }) => {
@@ -39,6 +42,10 @@ const AppRoutes = () => {
     <>
       <Navbar />
       <Routes>
+
+        <Route path="/home2" element={<Home2 />} />
+        <Route path="/home3" element={<Home3 />} />
+
         <Route path="/auth" element={isAuthenticated ? <Navigate to="/" /> : <Auth />} />
         <Route path="/" element={
           <ProtectedRoute>
