@@ -53,20 +53,18 @@ import React from 'react';
 type Brand = { name: string; logo: string; url?: string };
 
 const BRANDS: Brand[] = [
-  // ví dụ dùng clearbit để demo logo; thay bằng ảnh của bạn /public/logos/*
-  { name: 'Nike', logo: 'https://logo.clearbit.com/nike.com', url: 'https://nike.com' },
-  { name: 'Adidas', logo: 'https://logo.clearbit.com/adidas.com', url: 'https://adidas.com' },
-  { name: 'Sony', logo: 'https://logo.clearbit.com/sony.com', url: 'https://sony.com' },
-  { name: 'Lego', logo: 'https://logo.clearbit.com/lego.com', url: 'https://lego.com' },
-  { name: 'Nintendo', logo: 'https://logo.clearbit.com/nintendo.com', url: 'https://nintendo.com' },
-  { name: 'IKEA', logo: 'https://logo.clearbit.com/ikea.com', url: 'https://ikea.com' },
+  
+  { name: 'Levis', logo: '/logos/brand_01.png', url: 'https://levi.com' },
+  { name: 'Adidas', logo: '/logos/brand_02.png', url: 'https://adidas.com' },
+  { name: 'Nike', logo: '/logos/brand_03.png', url: 'https://nike.com' },
+  { name: 'H&M', logo: '/logos/brand_04.png', url: 'https://hm.com' },
 ];
 
 // logo có fallback text nếu ảnh lỗi
 function BrandLogo({ brand }: { brand: Brand }) {
   const [error, setError] = React.useState(false);
   const content = error ? (
-    <div className="px-3 py-2 text-xs font-medium text-slate-600 rounded-md border bg-white/70">
+    <div className="px-4 py-3 text-sm font-medium text-slate-600 rounded-md border bg-white/70">
       {brand.name}
     </div>
   ) : (
@@ -75,7 +73,7 @@ function BrandLogo({ brand }: { brand: Brand }) {
       alt={brand.name}
       loading="lazy"
       onError={() => setError(true)}
-      className="h-8 w-auto object-contain grayscale opacity-80 hover:opacity-100 hover:grayscale-0 transition"
+      className="h-20 w-auto object-contain grayscale opacity-80 hover:opacity-100 hover:grayscale-0 transition"
     />
   );
   return brand.url ? (
@@ -537,145 +535,145 @@ const onPlaceBid = (id: string) => {
 
 
       {/* HOW IT WORKS */}
-<section id="how" aria-labelledby="how-heading" className="container mx-auto px-4 mt-16 mb-16">
-  <h2 id="how-heading" className="text-xl md:text-2xl font-bold">How it works</h2>
-  <div className="mt-6 grid md:grid-cols-3 gap-4">
-    {[{icon:Gavel,title:'Bid in seconds',desc:'Create an account, verify, and start bidding instantly.'},
-      {icon:TrendingUp,title:'Curated drops',desc:'We hand-pick authentic items from top creators and partners.'},
-      {icon:Clock,title:'Transparent timers',desc:'Real-time countdowns and instant bid confirmations.'}
-    ].map((s, i)=> (
-      <motion.div
-        key={i}
-        className="relative rounded-2xl border bg-white/70 backdrop-blur p-5"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.4 }}
-        transition={{ duration: 0.4, delay: i*0.05 }}
-      >
-        {/* số bước cho rõ ràng */}
-        <span className="absolute -top-3 -left-3 h-8 w-8 grid place-items-center rounded-full bg-black/70 text-white text-sm font-bold ">
-          {i+1}
-        </span>
-        <s.icon className="h-6 w-6"/>
-        <div className="mt-2 font-semibold">{s.title}</div>
-        <div className="text-sm text-slate-600">{s.desc}</div>
-      </motion.div>
-    ))}
-  </div>
-</section>
-
-{/* PARTNERS */}
-<section id="partners" aria-labelledby="partners-heading" className="container mx-auto px-4 mb-16">
-  <div className="rounded-2xl border bg-white/60 backdrop-blur p-6">
-    <div className="flex items-center justify-between mb-4">
-      <h2 id="partners-heading" className="text-sm font-semibold text-slate-600">Trusted by brands</h2>
-      <span className="text-xs text-slate-400">Updated weekly</span>
-    </div>
-
-    {/* Mobile: horizontal strip with snap */}
-    <div className="-mx-2 md:hidden overflow-x-auto no-scrollbar px-2">
-      <div className="flex items-center gap-6 snap-x snap-mandatory">
-        {BRANDS.map((b) => (
-          <div key={b.name} className="snap-start">
-            <BrandLogo brand={b} />
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Desktop: neat grid */}
-    <div className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-8 place-items-center">
-      {BRANDS.map((b) => (
-        <BrandLogo key={b.name} brand={b} />
-      ))}
-    </div>
-  </div>
-
-  {/* hide scrollbar helper */}
-  <style>
-    {`.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}
-  </style>
-</section>
-
-
-{/* DROP PASS – CTA nổi bật (giữ id="newsletter" để anchor cũ chạy đúng) */}
-<section id="newsletter" aria-labelledby="drop-pass-heading" className="container mx-auto px-4 mb-20">
-  <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl">
-    <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/50 to-transparent" />
-    <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-fuchsia-300/40 blur-3xl" />
-    <div className="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-sky-300/40 blur-3xl" />
-
-    <div className="grid gap-8 p-6 md:p-10 md:grid-cols-2">
-      {/* Left: copy + perks + CTA */}
-      <div className="relative z-10">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary">New</Badge>
-          <Badge className="bg-gradient-to-r from-fuchsia-500 to-sky-500">Limited</Badge>
+      <section id="how" aria-labelledby="how-heading" className="container mx-auto px-4 mt-16 mb-16">
+        <h2 id="how-heading" className="text-xl md:text-2xl font-bold">How it works</h2>
+        <div className="mt-6 grid md:grid-cols-3 gap-4">
+          {[{icon:Gavel,title:'Bid in seconds',desc:'Create an account, verify, and start bidding instantly.'},
+            {icon:TrendingUp,title:'Curated drops',desc:'We hand-pick authentic items from top creators and partners.'},
+            {icon:Clock,title:'Transparent timers',desc:'Real-time countdowns and instant bid confirmations.'}
+          ].map((s, i)=> (
+            <motion.div
+              key={i}
+              className="relative rounded-2xl border bg-white/70 backdrop-blur p-5"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.4, delay: i*0.05 }}
+            >
+              {/* số bước cho rõ ràng */}
+              <span className="absolute -top-3 -left-3 h-8 w-8 grid place-items-center rounded-full bg-black/70 text-white text-sm font-bold ">
+                {i+1}
+              </span>
+              <s.icon className="h-6 w-6"/>
+              <div className="mt-2 font-semibold">{s.title}</div>
+              <div className="text-sm text-slate-600">{s.desc}</div>
+            </motion.div>
+          ))}
         </div>
-        <h3 id="drop-pass-heading" className="text-2xl md:text-3xl font-extrabold tracking-tight">
-          Unlock <span className="bg-gradient-to-r from-fuchsia-600 to-sky-600 bg-clip-text text-transparent">Drop Pass</span>
-        </h3>
-        <p className="mt-2 text-sm md:text-base text-slate-600">
-          Early access, fee discounts, and priority alerts for the hottest auctions.
-        </p>
+      </section>
 
-        <ul className="mt-4 space-y-2 text-sm text-slate-600">
-          <li className="flex items-center gap-2"><BellRing className="h-4 w-4" /> Priority alerts on live drops</li>
-          <li className="flex items-center gap-2"><BadgeCheck className="h-4 w-4" /> Verified creator access</li>
-          <li className="flex items-center gap-2"><Percent className="h-4 w-4" /> Lower buyer fees</li>
-          <li className="flex items-center gap-2"><Gift className="h-4 w-4" /> Member-only giveaways</li>
-        </ul>
+      {/* PARTNERS */}
+      <section id="partners" aria-labelledby="partners-heading" className="container mx-auto px-4 mb-16">
+        <div className="rounded-2xl border bg-white/60 backdrop-blur p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 id="partners-heading" className="text-sm font-semibold text-slate-600">Trusted by brands</h2>
+            <span className="text-xs text-slate-400">Updated weekly</span>
+          </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-3">
-          <Button className="gap-2">
-            <Sparkles className="h-4 w-4" />
-            Get Drop Pass
-          </Button>
-          <Button variant="outline" className="gap-2">
-            Learn more <ArrowRight className="h-4 w-4" />
-          </Button>
+          {/* Mobile: horizontal strip with snap */}
+          <div className="-mx-2 md:hidden overflow-x-auto no-scrollbar px-2">
+            <div className="flex items-center gap-6 snap-x snap-mandatory">
+              {BRANDS.map((b) => (
+                <div key={b.name} className="snap-start">
+                  <BrandLogo brand={b} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: neat grid */}
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-8 place-items-center">
+            {BRANDS.map((b) => (
+              <BrandLogo key={b.name} brand={b} />
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Right: next drop + stats */}
-      <div className="relative z-10">
-        <div className="rounded-2xl border bg-white/70 backdrop-blur p-4">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-medium">Next live drop</div>
-            <Badge variant="secondary">Today</Badge>
-          </div>
-          <div className="mt-2 text-2xl font-bold">
-            <Countdown endTime={Date.now() + 2 * 60 * 60 * 1000} />
-          </div>
+        {/* hide scrollbar helper */}
+        <style>
+          {`.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}
+        </style>
+      </section>
 
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="rounded-xl border bg-white/60 p-3 text-center">
-              <div className="text-xs text-slate-500">Active</div>
-              <div className="text-lg font-bold">
-                {Array.isArray(products) ? products.filter(p => p.status === 'active').length : 0}
+
+      {/* DROP PASS – CTA nổi bật (giữ id="newsletter" để anchor cũ chạy đúng) */}
+      <section id="newsletter" aria-labelledby="drop-pass-heading" className="container mx-auto px-4 mb-20">
+        <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl">
+          <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/50 to-transparent" />
+          <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-fuchsia-300/40 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-sky-300/40 blur-3xl" />
+
+          <div className="grid gap-8 p-6 md:p-10 md:grid-cols-2">
+            {/* Left: copy + perks + CTA */}
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary">New</Badge>
+                <Badge className="bg-gradient-to-r from-fuchsia-500 to-sky-500">Limited</Badge>
+              </div>
+              <h3 id="drop-pass-heading" className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                Unlock <span className="bg-gradient-to-r from-fuchsia-600 to-sky-600 bg-clip-text text-transparent">Drop Pass</span>
+              </h3>
+              <p className="mt-2 text-sm md:text-base text-slate-600">
+                Early access, fee discounts, and priority alerts for the hottest auctions.
+              </p>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                <li className="flex items-center gap-2"><BellRing className="h-4 w-4" /> Priority alerts on live drops</li>
+                <li className="flex items-center gap-2"><BadgeCheck className="h-4 w-4" /> Verified creator access</li>
+                <li className="flex items-center gap-2"><Percent className="h-4 w-4" /> Lower buyer fees</li>
+                <li className="flex items-center gap-2"><Gift className="h-4 w-4" /> Member-only giveaways</li>
+              </ul>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <Button className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Get Drop Pass
+                </Button>
+                <Button variant="outline" className="gap-2">
+                  Learn more <ArrowRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-            <div className="rounded-xl border bg-white/60 p-3 text-center">
-              <div className="text-xs text-slate-500">Bids today</div>
-              <div className="text-lg font-bold">
-                {Array.isArray(products) ? products.reduce((s,p)=> s + (p.bidsCount ?? (Array.isArray(p.bids) ? p.bids.length : p.bids ?? 0)), 0) : 0}
+
+            {/* Right: next drop + stats */}
+            <div className="relative z-10">
+              <div className="rounded-2xl border bg-white/70 backdrop-blur p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">Next live drop</div>
+                  <Badge variant="secondary">Today</Badge>
+                </div>
+                <div className="mt-2 text-2xl font-bold">
+                  <Countdown endTime={Date.now() + 2 * 60 * 60 * 1000} />
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="rounded-xl border bg-white/60 p-3 text-center">
+                    <div className="text-xs text-slate-500">Active</div>
+                    <div className="text-lg font-bold">
+                      {Array.isArray(products) ? products.filter(p => p.status === 'active').length : 0}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border bg-white/60 p-3 text-center">
+                    <div className="text-xs text-slate-500">Bids today</div>
+                    <div className="text-lg font-bold">
+                      {Array.isArray(products) ? products.reduce((s,p)=> s + (p.bidsCount ?? (Array.isArray(p.bids) ? p.bids.length : p.bids ?? 0)), 0) : 0}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border bg-white/60 p-3 text-center">
+                    <div className="text-xs text-slate-500">Creators</div>
+                    <div className="text-lg font-bold">+24</div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-xl border bg-gradient-to-r from-fuchsia-50 to-sky-50 p-3">
+                  <div className="text-sm font-medium">Member perk</div>
+                  <div className="text-xs text-slate-600">Get 5% fee discount on your next 3 wins</div>
+                </div>
               </div>
             </div>
-            <div className="rounded-xl border bg-white/60 p-3 text-center">
-              <div className="text-xs text-slate-500">Creators</div>
-              <div className="text-lg font-bold">+24</div>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-xl border bg-gradient-to-r from-fuchsia-50 to-sky-50 p-3">
-            <div className="text-sm font-medium">Member perk</div>
-            <div className="text-xs text-slate-600">Get 5% fee discount on your next 3 wins</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
 
 
