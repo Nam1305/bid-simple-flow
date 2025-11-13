@@ -205,7 +205,7 @@ export default function ProductDetail() {
             
             {/* Moved product information here */}
             <div className="mt-6">
-              <Badge className="mb-2">{product.category}</Badge>
+              {/* <Badge className="mb-2">{product.category}</Badge> */}
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
               <div className="space-y-4">
                 <div>

@@ -7,6 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Product, useData } from '@/contexts/DataContext';
 
+import { Separator } from '@/components/ui/separator'
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import { Mail, Github, Instagram, Twitter, Linkedin, Globe, CreditCard, ShieldCheck, Lock } from 'lucide-react'
+
+import { Sparkles, BellRing, BadgeCheck, Percent, Gift, ArrowRight } from 'lucide-react'
 
 
 import {
@@ -22,6 +27,7 @@ import {
   Heart
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import React from 'react';
 
 /**
  * HOME (Integrated):
@@ -42,6 +48,46 @@ import { useAuth } from '@/contexts/AuthContext';
 //   currentPrice: number;
 //   buyNowPrice?: number;
 // };
+
+// đặt trên cùng file (ngoài component) hoặc tách ra constants.ts
+type Brand = { name: string; logo: string; url?: string };
+
+const BRANDS: Brand[] = [
+  // ví dụ dùng clearbit để demo logo; thay bằng ảnh của bạn /public/logos/*
+  { name: 'Nike', logo: 'https://logo.clearbit.com/nike.com', url: 'https://nike.com' },
+  { name: 'Adidas', logo: 'https://logo.clearbit.com/adidas.com', url: 'https://adidas.com' },
+  { name: 'Sony', logo: 'https://logo.clearbit.com/sony.com', url: 'https://sony.com' },
+  { name: 'Lego', logo: 'https://logo.clearbit.com/lego.com', url: 'https://lego.com' },
+  { name: 'Nintendo', logo: 'https://logo.clearbit.com/nintendo.com', url: 'https://nintendo.com' },
+  { name: 'IKEA', logo: 'https://logo.clearbit.com/ikea.com', url: 'https://ikea.com' },
+];
+
+// logo có fallback text nếu ảnh lỗi
+function BrandLogo({ brand }: { brand: Brand }) {
+  const [error, setError] = React.useState(false);
+  const content = error ? (
+    <div className="px-3 py-2 text-xs font-medium text-slate-600 rounded-md border bg-white/70">
+      {brand.name}
+    </div>
+  ) : (
+    <img
+      src={brand.logo}
+      alt={brand.name}
+      loading="lazy"
+      onError={() => setError(true)}
+      className="h-8 w-auto object-contain grayscale opacity-80 hover:opacity-100 hover:grayscale-0 transition"
+    />
+  );
+  return brand.url ? (
+    <a href={brand.url} target="_blank" rel="noreferrer" aria-label={brand.name} className="shrink-0">
+      {content}
+    </a>
+  ) : (
+    <div className="shrink-0">{content}</div>
+  );
+}
+
+
 
 function AuctionCard({ a, onPlaceBid, onToggleWatch, watched }) {
   return (
@@ -491,65 +537,276 @@ const onPlaceBid = (id: string) => {
 
 
       {/* HOW IT WORKS */}
-      <section id="how" className="container mx-auto px-4 mt-16 mb-12">
-        <h2 className="text-xl md:text-2xl font-bold">How it works</h2>
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-          {[{icon:Gavel,title:'Bid in seconds',desc:'Create an account, verify, and start bidding instantly.'},{icon:TrendingUp,title:'Curated drops',desc:'We hand-pick authentic items from top creators and partners.'},{icon:Clock,title:'Transparent timers',desc:'Real-time countdowns and instant bid confirmations.'}].map((s, i)=> (
-            <motion.div
-              key={i}
-              className="rounded-2xl border bg-white/70 backdrop-blur p-5"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i*0.05 }}
-            >
-              <s.icon className="h-6 w-6"/>
-              <div className="mt-2 font-semibold">{s.title}</div>
-              <div className="text-sm text-slate-600">{s.desc}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+<section id="how" aria-labelledby="how-heading" className="container mx-auto px-4 mt-16 mb-16">
+  <h2 id="how-heading" className="text-xl md:text-2xl font-bold">How it works</h2>
+  <div className="mt-6 grid md:grid-cols-3 gap-4">
+    {[{icon:Gavel,title:'Bid in seconds',desc:'Create an account, verify, and start bidding instantly.'},
+      {icon:TrendingUp,title:'Curated drops',desc:'We hand-pick authentic items from top creators and partners.'},
+      {icon:Clock,title:'Transparent timers',desc:'Real-time countdowns and instant bid confirmations.'}
+    ].map((s, i)=> (
+      <motion.div
+        key={i}
+        className="relative rounded-2xl border bg-white/70 backdrop-blur p-5"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.4, delay: i*0.05 }}
+      >
+        {/* số bước cho rõ ràng */}
+        <span className="absolute -top-3 -left-3 h-8 w-8 grid place-items-center rounded-full bg-black/70 text-white text-sm font-bold ">
+          {i+1}
+        </span>
+        <s.icon className="h-6 w-6"/>
+        <div className="mt-2 font-semibold">{s.title}</div>
+        <div className="text-sm text-slate-600">{s.desc}</div>
+      </motion.div>
+    ))}
+  </div>
+</section>
 
-      {/* PARTNERS */}
-      <section id="partners" className="container mx-auto px-4 mb-16">
-        <div className="rounded-2xl border bg-white/60 backdrop-blur p-6">
-          <div className="text-sm text-slate-500 mb-3">Trusted by brands</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-6 opacity-70">
-            {Array.from({length:6}).map((_,i)=> (
-              <img key={i} className="mx-auto h-8 object-contain" src={`https://dummyimage.com/160x40/000/fff&text=Brand+${i+1}`} alt={`Brand ${i+1}`} />
-            ))}
+{/* PARTNERS */}
+<section id="partners" aria-labelledby="partners-heading" className="container mx-auto px-4 mb-16">
+  <div className="rounded-2xl border bg-white/60 backdrop-blur p-6">
+    <div className="flex items-center justify-between mb-4">
+      <h2 id="partners-heading" className="text-sm font-semibold text-slate-600">Trusted by brands</h2>
+      <span className="text-xs text-slate-400">Updated weekly</span>
+    </div>
+
+    {/* Mobile: horizontal strip with snap */}
+    <div className="-mx-2 md:hidden overflow-x-auto no-scrollbar px-2">
+      <div className="flex items-center gap-6 snap-x snap-mandatory">
+        {BRANDS.map((b) => (
+          <div key={b.name} className="snap-start">
+            <BrandLogo brand={b} />
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Desktop: neat grid */}
+    <div className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-8 place-items-center">
+      {BRANDS.map((b) => (
+        <BrandLogo key={b.name} brand={b} />
+      ))}
+    </div>
+  </div>
+
+  {/* hide scrollbar helper */}
+  <style>
+    {`.no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}`}
+  </style>
+</section>
+
+
+{/* DROP PASS – CTA nổi bật (giữ id="newsletter" để anchor cũ chạy đúng) */}
+<section id="newsletter" aria-labelledby="drop-pass-heading" className="container mx-auto px-4 mb-20">
+  <div className="relative overflow-hidden rounded-3xl border border-white/40 bg-white/60 backdrop-blur-2xl shadow-xl">
+    <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/50 to-transparent" />
+    <div className="pointer-events-none absolute -top-16 -left-16 h-56 w-56 rounded-full bg-fuchsia-300/40 blur-3xl" />
+    <div className="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-sky-300/40 blur-3xl" />
+
+    <div className="grid gap-8 p-6 md:p-10 md:grid-cols-2">
+      {/* Left: copy + perks + CTA */}
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-2">
+          <Badge variant="secondary">New</Badge>
+          <Badge className="bg-gradient-to-r from-fuchsia-500 to-sky-500">Limited</Badge>
+        </div>
+        <h3 id="drop-pass-heading" className="text-2xl md:text-3xl font-extrabold tracking-tight">
+          Unlock <span className="bg-gradient-to-r from-fuchsia-600 to-sky-600 bg-clip-text text-transparent">Drop Pass</span>
+        </h3>
+        <p className="mt-2 text-sm md:text-base text-slate-600">
+          Early access, fee discounts, and priority alerts for the hottest auctions.
+        </p>
+
+        <ul className="mt-4 space-y-2 text-sm text-slate-600">
+          <li className="flex items-center gap-2"><BellRing className="h-4 w-4" /> Priority alerts on live drops</li>
+          <li className="flex items-center gap-2"><BadgeCheck className="h-4 w-4" /> Verified creator access</li>
+          <li className="flex items-center gap-2"><Percent className="h-4 w-4" /> Lower buyer fees</li>
+          <li className="flex items-center gap-2"><Gift className="h-4 w-4" /> Member-only giveaways</li>
+        </ul>
+
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+          <Button className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            Get Drop Pass
+          </Button>
+          <Button variant="outline" className="gap-2">
+            Learn more <ArrowRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Right: next drop + stats */}
+      <div className="relative z-10">
+        <div className="rounded-2xl border bg-white/70 backdrop-blur p-4">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium">Next live drop</div>
+            <Badge variant="secondary">Today</Badge>
+          </div>
+          <div className="mt-2 text-2xl font-bold">
+            <Countdown endTime={Date.now() + 2 * 60 * 60 * 1000} />
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="rounded-xl border bg-white/60 p-3 text-center">
+              <div className="text-xs text-slate-500">Active</div>
+              <div className="text-lg font-bold">
+                {Array.isArray(products) ? products.filter(p => p.status === 'active').length : 0}
+              </div>
+            </div>
+            <div className="rounded-xl border bg-white/60 p-3 text-center">
+              <div className="text-xs text-slate-500">Bids today</div>
+              <div className="text-lg font-bold">
+                {Array.isArray(products) ? products.reduce((s,p)=> s + (p.bidsCount ?? (Array.isArray(p.bids) ? p.bids.length : p.bids ?? 0)), 0) : 0}
+              </div>
+            </div>
+            <div className="rounded-xl border bg-white/60 p-3 text-center">
+              <div className="text-xs text-slate-500">Creators</div>
+              <div className="text-lg font-bold">+24</div>
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border bg-gradient-to-r from-fuchsia-50 to-sky-50 p-3">
+            <div className="text-sm font-medium">Member perk</div>
+            <div className="text-xs text-slate-600">Get 5% fee discount on your next 3 wins</div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
-      {/* NEWSLETTER */}
-      <section id="newsletter" className="container mx-auto max-w-3xl px-4 mb-20">
-        <Card className="border-none bg-gradient-to-r from-fuchsia-50 to-sky-50">
-          <CardHeader>
-            <h3 className="text-xl font-semibold">Don’t miss new drops</h3>
-          </CardHeader>
-          <CardContent>
-            <form className="flex flex-col sm:flex-row gap-3" onSubmit={(e)=>e.preventDefault()}>
-              <Input name="email" type="email" placeholder="you@example.com" required />
-              <Button type="submit">Subscribe</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </section>
+
 
       {/* FOOTER */}
-      <footer className="border-t bg-white/60 backdrop-blur">
-        <div className="container mx-auto px-4 py-8 text-sm text-slate-600 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2"><Gavel className="h-4 w-4"/> © {new Date().getFullYear()} SnapBid</div>
-          <div className="flex items-center gap-4">
-            <a href="#">About</a>
-            <a href="#">Help</a>
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-          </div>
-        </div>
+      <footer className="relative border-t supports-[backdrop-filter]:bg-white/50 bg-white/70 backdrop-blur-xl">
+      {/* hairline gradient */}
+      <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-fuchsia-400/40 to-transparent" />
+
+      <div className="container mx-auto px-4 py-12 text-slate-700">
+         <div className="grid gap-10 md:grid-cols-12">
+            {/* Newsletter */}
+            <div className="md:col-span-5">
+            <div className="max-w-md">
+               <div className="flex items-center gap-2 font-bold text-xl">
+                  <Gavel className="h-5 w-5" /> SnapBid
+               </div>
+               <h3 className="mt-3 text-lg font-semibold">Don’t miss new drops</h3>
+               <p className="text-sm text-slate-500">
+                  Get alerts for curated auctions, exclusive releases, and price drops.
+               </p>
+               <form
+                  className="mt-4 flex items-center gap-2"
+                  onSubmit={(e) => e.preventDefault()}
+               >
+                  <div className="relative w-full">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                     type="email"
+                     placeholder="you@example.com"
+                     className="pl-9 h-10"
+                     required
+                  />
+                  </div>
+                  <Button type="submit" className="h-10">Subscribe</Button>
+               </form>
+               <p className="mt-2 text-xs text-slate-400">
+                  By subscribing, you agree to our Terms & Privacy.
+               </p>
+            </div>
+            </div>
+
+            {/* Link columns */}
+            <div className="md:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+               <h4 className="text-sm font-semibold">Marketplace</h4>
+               <ul className="mt-3 space-y-2 text-sm">
+                  <li><a href="#featured" className="hover:text-slate-900">Featured</a></li>
+                  <li><a href="#trending" className="hover:text-slate-900">Trending</a></li>
+                  <li><a href="#how" className="hover:text-slate-900">How it works</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Categories</a></li>
+               </ul>
+            </div>
+            <div>
+               <h4 className="text-sm font-semibold">Resources</h4>
+               <ul className="mt-3 space-y-2 text-sm">
+                  <li><a href="#" className="hover:text-slate-900">Help Center</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Guides</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Buyer Protection</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Seller Handbook</a></li>
+               </ul>
+            </div>
+            <div>
+               <h4 className="text-sm font-semibold">Company</h4>
+               <ul className="mt-3 space-y-2 text-sm">
+                  <li><a href="#" className="hover:text-slate-900">About</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Careers</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Press</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Contact</a></li>
+               </ul>
+            </div>
+            <div>
+               <h4 className="text-sm font-semibold">Legal</h4>
+               <ul className="mt-3 space-y-2 text-sm">
+                  <li><a href="#" className="hover:text-slate-900">Terms</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Privacy</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Cookies</a></li>
+                  <li><a href="#" className="hover:text-slate-900">Licenses</a></li>
+               </ul>
+            </div>
+            </div>
+         </div>
+
+         <Separator className="my-8" />
+
+         {/* Bottom bar */}
+         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Left: copyright */}
+            <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Gavel className="h-4 w-4" /> © {new Date().getFullYear()} SnapBid. All rights reserved.
+            </div>
+
+            {/* Middle: language / currency */}
+            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+               <Globe className="h-4 w-4 text-slate-500" />
+               <Select defaultValue="en">
+                  <SelectTrigger className="h-8 w-[120px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="vi">Tiếng Việt</SelectItem>
+                  </SelectContent>
+               </Select>
+            </div>
+            <Select defaultValue="usd">
+               <SelectTrigger className="h-8 w-[110px]"><SelectValue /></SelectTrigger>
+               <SelectContent>
+                  <SelectItem value="usd">USD</SelectItem>
+                  <SelectItem value="vnd">VND</SelectItem>
+                  <SelectItem value="eur">EUR</SelectItem>
+               </SelectContent>
+            </Select>
+            </div>
+
+            {/* Right: socials */}
+            <div className="flex items-center gap-3">
+            <a href="#" aria-label="Twitter" className="p-2 rounded-full hover:bg-slate-100"><Twitter className="h-4 w-4" /></a>
+            <a href="#" aria-label="Instagram" className="p-2 rounded-full hover:bg-slate-100"><Instagram className="h-4 w-4" /></a>
+            <a href="#" aria-label="LinkedIn" className="p-2 rounded-full hover:bg-slate-100"><Linkedin className="h-4 w-4" /></a>
+            <a href="#" aria-label="GitHub" className="p-2 rounded-full hover:bg-slate-100"><Github className="h-4 w-4" /></a>
+            </div>
+         </div>
+
+         {/* Trust row */}
+         <div className="mt-4 text-xs text-slate-500 flex flex-wrap items-center gap-4">
+            <span className="inline-flex items-center gap-1"><Lock className="h-3.5 w-3.5" /> Secure checkout (TLS)</span>
+            <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Buyer protection</span>
+            <span className="inline-flex items-center gap-1"><CreditCard className="h-3.5 w-3.5" /> We accept major cards</span>
+         </div>
+      </div>
       </footer>
+
     </div>
   );
 }
