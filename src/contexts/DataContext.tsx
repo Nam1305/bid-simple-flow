@@ -18,7 +18,7 @@ export interface Product {
     endTime?: number;
     rejectionReason?: string;
     createdAt: number;
-    // Handbag-specific fields (VẪN LÀ STRING theo file gốc)
+    // Handbag-specific fields
     era?: string;
     brand?: string;
     numberOfItems?: string;
@@ -26,9 +26,9 @@ export interface Product {
     material?: string;
     condition?: string;
     size?: string;
-    height?: string; // Giữ nguyên string
-    width?: string;  // Giữ nguyên string
-    depth?: string;  // Giữ nguyên string
+    height?: string;
+    width?: string;
+    depth?: string;
     // Shoe-specific fields
     shoeEra?: string;
     shoeBrand?: string;
@@ -41,10 +41,9 @@ export interface Product {
     shoeCondition?: string;
     shoeMadeIn?: string;
 
-    // ⭐ THÊM MỚI: Các trường AI Check ⭐
+    // AI Check
     isAuthentic?: boolean;
     certificationUrl?: string;
-    // -------------------------------------
 
     bidsCount?: number;
     bids?: Bid[];
@@ -77,7 +76,6 @@ interface DataContextType {
     products: Product[];
     bids: Bid[];
     orders: Order[];
-    // Omit giờ đây đã bao gồm các trường AI mới
     addProduct: (product: Omit<Product, 'id' | 'status' | 'currentPrice' | 'createdAt'>) => void;
     updateProductStatus: (id: string, status: Product['status'], rejectionReason?: string, startTime?: number) => void;
     addBid: (bid: Omit<Bid, 'id' | 'timestamp'>) => void;
@@ -92,6 +90,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     const [bids, setBids] = useState<Bid[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
 
+    // Load từ localStorage
     useEffect(() => {
         const storedProducts = localStorage.getItem('auction_products');
         const storedBids = localStorage.getItem('auction_bids');
@@ -102,6 +101,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         if (storedOrders) setOrders(JSON.parse(storedOrders));
     }, []);
 
+    // Save vào localStorage
     useEffect(() => {
         localStorage.setItem('auction_products', JSON.stringify(products));
     }, [products]);
@@ -114,17 +114,18 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('auction_orders', JSON.stringify(orders));
     }, [orders]);
 
+    // ✅ Hoàn thiện addProduct
     const addProduct = (product: Omit<Product, 'id' | 'status' | 'currentPrice' | 'createdAt'>) => {
-        const productPayload = product as Product;
-
         const newProduct: Product = {
-            ...productPayload,
+            ...product,
             id: `product_${Date.now()}`,
             status: 'pending',
-            currentPrice: productPayload.startPrice,
+            currentPrice: Number(product.startPrice) || 0,
             createdAt: Date.now(),
-            // Đảm bảo startPrice là số, phòng trường hợp lỗi từ form
-            startPrice: Number(productPayload.startPrice),
+            startPrice: Number(product.startPrice) || 0,
+            bidStep: Number(product.bidStep) || 1,
+            buyNowPrice: product.buyNowPrice ? Number(product.buyNowPrice) : undefined,
+            duration: Number(product.duration) || 60,
         };
         setProducts((prev) => [...prev, newProduct]);
     };
@@ -168,7 +169,6 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         };
         setOrders((prev) => [...prev, newOrder]);
 
-        // Mark product as ended when order is created
         setProducts((prev) =>
             prev.map((p) => (p.id === order.productId ? { ...p, status: 'ended' } : p))
         );

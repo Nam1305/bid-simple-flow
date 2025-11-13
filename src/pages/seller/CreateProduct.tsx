@@ -173,19 +173,43 @@ export default function CreateProduct() {
 
 
     // Hàm handleSubmit (SỬA LỖI TYPESCRIPT VÀ RUNTIME)
+    // Hàm handleSubmit (ĐÃ FIX: Thêm validation đầy đủ)
     const handleSubmit = () => {
-        if (!user) return;
+        if (!user) {
+            toast({ title: 'Lỗi', description: 'Bạn cần đăng nhập để tạo sản phẩm', variant: 'destructive' });
+            return;
+        }
+
+        // --- VALIDATION: Kiểm tra các trường bắt buộc ---
+        const errors: string[] = [];
+
+        if (!formData.title.trim()) errors.push('Title');
+        if (!formData.description.trim()) errors.push('Description');
+        if (!formData.category) errors.push('Category');
+        if (formData.images.length === 0) errors.push('Product Images');
+        if (Number(formData.startPrice) <= 0) errors.push('Starting Price (phải > 0)');
+        if (Number(formData.bidStep) <= 0) errors.push('Bid Step (phải > 0)');
+        if (Number(formData.duration) <= 0) errors.push('Duration (phải > 0)');
+
+        if (errors.length > 0) {
+            toast({
+                title: '❌ Thiếu thông tin bắt buộc',
+                description: `Vui lòng điền đầy đủ: ${errors.join(', ')}`,
+                variant: 'destructive',
+            });
+            return;
+        }
 
         // --- 1. Chuẩn bị các trường dữ liệu chung ---
         const commonFields: BasePayload = {
-            title: formData.title,
-            description: formData.description,
+            title: formData.title.trim(),
+            description: formData.description.trim(),
             category: formData.category,
             images: formData.images,
             evidenceImages: Object.values(formData.evidenceImages).flat() as string[],
             startPrice: Number(formData.startPrice),
             bidStep: Number(formData.bidStep),
-            buyNowPrice: Number(formData.buyNowPrice),
+            buyNowPrice: formData.buyNowPrice > 0 ? Number(formData.buyNowPrice) : undefined,
             duration: Number(formData.duration),
             sellerId: user.id,
             isAuthentic: aiCheckStatus === 'authentic',
@@ -199,21 +223,30 @@ export default function CreateProduct() {
         if (formData.category === 'Handbag') {
             finalPayload = {
                 ...commonFields,
-                era: formData.era, brand: formData.brand, numberOfItems: formData.numberOfItems,
-                colour: formData.colour, material: formData.material, condition: formData.condition,
-                size: formData.size,
-                // ⭐ ĐÃ FIX LỖI: Chuyển đổi về STRING để khớp với DataContext
-                height: String(formData.height),
-                width: String(formData.width),
-                depth: String(formData.depth),
+                era: formData.era || undefined,
+                brand: formData.brand || undefined,
+                numberOfItems: formData.numberOfItems || undefined,
+                colour: formData.colour || undefined,
+                material: formData.material || undefined,
+                condition: formData.condition || undefined,
+                size: formData.size || undefined,
+                height: formData.height ? String(formData.height) : undefined,
+                width: formData.width ? String(formData.width) : undefined,
+                depth: formData.depth ? String(formData.depth) : undefined,
             };
         } else if (formData.category === 'Shoe') {
             finalPayload = {
                 ...commonFields,
-                shoeEra: formData.shoeEra, shoeBrand: formData.shoeBrand, shoeSize: formData.shoeSize,
-                shoeNewInBox: formData.shoeNewInBox, shoeColour: formData.shoeColour, shoeGender: formData.shoeGender,
-                shoeMaterial: formData.shoeMaterial, shoeVintage: formData.shoeVintage, shoeCondition: formData.shoeCondition,
-                shoeMadeIn: formData.shoeMadeIn,
+                shoeEra: formData.shoeEra || undefined,
+                shoeBrand: formData.shoeBrand || undefined,
+                shoeSize: formData.shoeSize || undefined,
+                shoeNewInBox: formData.shoeNewInBox || undefined,
+                shoeColour: formData.shoeColour || undefined,
+                shoeGender: formData.shoeGender || undefined,
+                shoeMaterial: formData.shoeMaterial || undefined,
+                shoeVintage: formData.shoeVintage || undefined,
+                shoeCondition: formData.shoeCondition || undefined,
+                shoeMadeIn: formData.shoeMadeIn || undefined,
             };
         } else {
             finalPayload = commonFields;
@@ -223,18 +256,20 @@ export default function CreateProduct() {
             // --- 3. Gửi payload đã được làm sạch và ép kiểu an toàn cho addProduct ---
             addProduct(finalPayload as AddProductPayload);
 
-            toast({ title: 'Product submitted for review!' });
+            toast({
+                title: '✅ Thành công!',
+                description: 'Sản phẩm đã được gửi để chờ duyệt.',
+            });
             navigate('/');
         } catch (error) {
             console.error("Lỗi khi gửi sản phẩm:", error);
             toast({
-                title: 'Lỗi gửi sản phẩm',
-                description: 'Đã xảy ra lỗi khi gửi dữ liệu. Vui lòng kiểm tra console để biết chi tiết.',
+                title: '❌ Lỗi gửi sản phẩm',
+                description: 'Đã xảy ra lỗi khi gửi dữ liệu. Vui lòng thử lại.',
                 variant: 'destructive'
             });
         }
     };
-
 
     return (
         <div className="min-h-screen bg-background py-8">
