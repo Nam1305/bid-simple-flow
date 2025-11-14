@@ -5,13 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useData } from '@/contexts/DataContext';
+import { Product, useData } from '@/contexts/DataContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Clock, TrendingUp, ShoppingCart, Eye,Hourglass } from 'lucide-react';
 import { Gavel, ChevronUp, ChevronDown,  } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+
+import {
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Add these custom icon components
 
@@ -64,6 +69,10 @@ export default function ProductDetail() {
     ended: false,
   });
   const [showEvidence, setShowEvidence] = useState(false);
+
+  
+
+
   const [showAllBids, setShowAllBids] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -338,16 +347,16 @@ const handlePlaceBid = (e: any) => {
                   ))}
                 </div>
               )}
-            </Card>
+            </Card>                                         
 
             <Button
-        variant="outline"
-        className="w-full mt-4"
-        onClick={() => setShowEvidence(true)}
-      >
-        <Eye className="h-4 w-4 mr-2" />
-        View Authentication Evidence
-      </Button>
+              variant="outline"
+              className="w-full mt-4"
+              onClick={() => setShowEvidence(true)}
+              >
+              <Eye className="h-4 w-4 mr-2" />
+              View Authentication Evidence
+            </Button>
 
             {/* Description + Details (gộp lại, style giống info card) */}
             <Card className="border-none bg-white/70 backdrop-blur-xl">
@@ -826,20 +835,23 @@ const handlePlaceBid = (e: any) => {
 
       {/* Evidence dialog giữ nguyên */}
       <Dialog open={showEvidence} onOpenChange={setShowEvidence}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Authentication Evidence</DialogTitle>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            {product.evidenceImages.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt=""
-                className="w-full h-64 object-cover rounded"
-              />
-            ))}
-          </div>
+          <ScrollArea className="flex-grow p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {product.evidenceImages.map((img, idx) => (
+                <div key={idx} className="aspect-square overflow-hidden rounded-lg border bg-muted">
+                  <img
+                    src={img}
+                    alt={`Authentication evidence ${idx + 1}`}
+                    className="w-full h-full object-cover transition-transform hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>

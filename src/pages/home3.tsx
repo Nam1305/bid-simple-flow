@@ -284,6 +284,19 @@ export default function Home() {
    });
    };
 
+     const catScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollCategoriesRight = () => {
+    const el = catScrollRef.current;
+    if (!el) return;
+    const delta = 200; // số px kéo sang phải mỗi lần bấm
+    el.scrollTo({
+      left: el.scrollLeft + delta,
+      behavior: 'smooth',
+    });
+  };
+
+
 // demo: đưa user sang trang chi tiết để đặt bid
 const onPlaceBid = (id: string) => {
   navigate(`/product/${id}?action=bid`);
@@ -489,20 +502,43 @@ const onPlaceBid = (id: string) => {
       <section className="container mx-auto px-4 mt-8">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-xl md:text-2xl font-bold">Browse by category</h2>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {categories.map((c) => (
-              <Badge
-                key={c}
-                className={`cursor-pointer ${category === c ? 'bg-slate-900' : ''}`}
-                variant={category === c ? 'default' : 'secondary'}
-                onClick={() => setCategory(c)}
+
+          <div className="flex items-center gap-2 max-w-[60%] md:max-w-[70%] lg:max-w-[75%]">
+            {/* thanh chip cuộn ngang */}
+            <div
+              ref={catScrollRef}
+              className="flex flex-nowrap gap-2 overflow-x-auto no-scrollbar"
+            >
+              {categories.map((c) => (
+                <Badge
+                  key={c}
+                  className={`cursor-pointer whitespace-nowrap ${
+                    category === c ? 'bg-slate-900 text-white' : ''
+                  }`}
+                  variant={category === c ? 'default' : 'secondary'}
+                  onClick={() => setCategory(c)}
+                >
+                  {c}
+                </Badge>
+              ))}
+            </div>
+
+            {/* nút kéo sang phải – chỉ hiện nếu > 3 category */}
+            {categories.length > 3 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={scrollCategoriesRight}
               >
-                {c}
-              </Badge>
-            ))}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </section>
+
 
       {/* GRID */}
       <section className="container mx-auto px-4 mt-6 pb-16">

@@ -136,27 +136,32 @@ export default function CreateProduct() {
     };
 
     // Logic mô phỏng AI Check
-    const startAICheck = () => {
-        setAiCheckStatus('checking');
-        setAiProgress(0);
+    // Simulated AI Check logic
+const startAICheck = () => {
+  setAiCheckStatus('checking');
+  setAiProgress(0);
 
-        const interval = setInterval(() => {
-            setAiProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    setAiCheckStatus('authentic');
-                    return 100;
-                }
-                return prev + Math.floor(Math.random() * 15) + 5;
-            });
-        }, 500);
-    };
+  const interval = setInterval(() => {
+    setAiProgress(prev => {
+      const increment = Math.floor(Math.random() * 15) + 5; // 5–19
+      const next = Math.min(prev + increment, 100);         // not exceeding 100
+
+      if (next >= 100) {
+        clearInterval(interval);
+        setAiCheckStatus('authentic');
+      }
+
+      return next;
+    });
+  }, 500);
+};
 
     // Hàm xử lý chuyển bước
+    // Step handling function
     const handleNextStep = () => {
         if (step === 2) {
             if (!requiredImagesUploaded) {
-                toast({ title: "Thiếu ảnh xác thực", description: "Vui lòng tải lên tất cả các ảnh bắt buộc (*)", variant: "destructive", });
+                toast({ title: "Missing Authentication Images", description: "Please upload all required (*) images", variant: "destructive", });
                 return;
             }
             setStep(3); // -> AI Check
@@ -173,28 +178,29 @@ export default function CreateProduct() {
 
 
     // Hàm handleSubmit (SỬA LỖI TYPESCRIPT VÀ RUNTIME)
-    // Hàm handleSubmit (ĐÃ FIX: Thêm validation đầy đủ)
+    // handleSubmit function (FIXED: Added full validation)
     const handleSubmit = () => {
         if (!user) {
-            toast({ title: 'Lỗi', description: 'Bạn cần đăng nhập để tạo sản phẩm', variant: 'destructive' });
+            toast({ title: 'Error', description: 'You need to log in to create a product', variant: 'destructive' });
             return;
         }
 
         // --- VALIDATION: Kiểm tra các trường bắt buộc ---
+        // --- VALIDATION: Check required fields ---
         const errors: string[] = [];
 
         if (!formData.title.trim()) errors.push('Title');
         if (!formData.description.trim()) errors.push('Description');
         if (!formData.category) errors.push('Category');
         if (formData.images.length === 0) errors.push('Product Images');
-        if (Number(formData.startPrice) <= 0) errors.push('Starting Price (phải > 0)');
-        if (Number(formData.bidStep) <= 0) errors.push('Bid Step (phải > 0)');
-        if (Number(formData.duration) <= 0) errors.push('Duration (phải > 0)');
+        if (Number(formData.startPrice) <= 0) errors.push('Starting Price (must be > 0)');
+        if (Number(formData.bidStep) <= 0) errors.push('Bid Step (must be > 0)');
+        if (Number(formData.duration) <= 0) errors.push('Duration (must be > 0)');
 
         if (errors.length > 0) {
             toast({
-                title: '❌ Thiếu thông tin bắt buộc',
-                description: `Vui lòng điền đầy đủ: ${errors.join(', ')}`,
+                title: '❌ Missing required information',
+                description: `Please fill in: ${errors.join(', ')}`,
                 variant: 'destructive',
             });
             return;
@@ -257,15 +263,15 @@ export default function CreateProduct() {
             addProduct(finalPayload as AddProductPayload);
 
             toast({
-                title: '✅ Thành công!',
-                description: 'Sản phẩm đã được gửi để chờ duyệt.',
+                title: 'Success!',
+                description: 'Your product has been submitted for review.',
             });
             navigate('/');
         } catch (error) {
             console.error("Lỗi khi gửi sản phẩm:", error);
             toast({
-                title: '❌ Lỗi gửi sản phẩm',
-                description: 'Đã xảy ra lỗi khi gửi dữ liệu. Vui lòng thử lại.',
+                title: 'Product submission error',
+                description: 'An error occurred while sending data. Please try again.',
                 variant: 'destructive'
             });
         }
@@ -368,9 +374,9 @@ export default function CreateProduct() {
                         {step === 2 && (
                             <div className="space-y-6">
                                 <div>
-                                    <Label className="text-base font-semibold mb-4 block">📸 Required Authentication Images</Label>
+                                    <Label className="text-base font-semibold mb-4 block">Required Authentication Images</Label>
                                     <p className="text-sm text-muted-foreground mb-6">
-                                        Vui lòng tải lên ảnh rõ ràng cho từng yêu cầu. Ảnh này được sử dụng cho quá trình kiểm tra hàng thật bằng AI.
+                                        Please upload clear images for each requirement. These images are used for AI authentication process.
                                     </p>
 
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -420,9 +426,9 @@ export default function CreateProduct() {
                         {/* Step 3: AI Check Authentic */}
                         {step === 3 && (
                             <div className="space-y-6 text-center py-10">
-                                <h3 className="font-semibold text-xl">🔍 AI Authentic Check in Progress...</h3>
+                                <h3 className="font-semibold text-xl">AI Authentic Check in Progress...</h3>
                                 <p className="text-muted-foreground">
-                                    Hệ thống AI của Snapbid đang phân tích hình ảnh xác thực của bạn để đảm bảo tính chính hãng.
+                                    Snapbid's AI system is analyzing your authentication images to ensure authenticity.
                                 </p>
 
                                 {aiCheckStatus === 'idle' && (
@@ -444,10 +450,10 @@ export default function CreateProduct() {
                                         <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
                                         <h4 className="text-2xl font-bold text-green-700">AUTHENTICATED!</h4>
                                         <p className="text-md">
-                                            Sản phẩm của bạn đã được hệ thống AI của Snapbid xác nhận là **Hàng Thật**.
+                                            Your product has been verified as **Authentic** by Snapbid's AI system.
                                         </p>
                                         <Button onClick={() => setStep(4)} className="w-full">
-                                            Tiếp tục
+                                            Continue
                                         </Button>
                                     </div>
                                 )}
@@ -457,7 +463,7 @@ export default function CreateProduct() {
                                         <X className="h-12 w-12 text-red-600 mx-auto" />
                                         <h4 className="text-2xl font-bold text-red-700">AUTHENTIC CHECK FAILED</h4>
                                         <p className="text-md">
-                                            Vui lòng kiểm tra lại ảnh xác thực hoặc liên hệ hỗ trợ.
+                                            Please check your authentication images again or contact support.
                                         </p>
                                     </div>
                                 )}
@@ -467,22 +473,22 @@ export default function CreateProduct() {
                         {/* Step 4: AI Certificate Display */}
                         {step === 4 && aiCheckStatus === 'authentic' && (
                             <div className="space-y-6 py-4">
-                                <h3 className="font-semibold text-xl text-center">✅ Chứng Nhận Hàng Thật Snapbid</h3>
+                                <h3 className="font-semibold text-xl text-center">Snapbid Authentic Certificate</h3>
                                 <Separator />
                                 <div className="grid md:grid-cols-2 gap-6 items-center">
                                     <div className="space-y-4 p-4 border rounded-lg bg-green-50">
                                         <p className="text-lg font-bold flex items-center gap-2 text-green-700">
                                             <CheckCircle className="h-6 w-6" />
-                                            Sản Phẩm Đã Được Xác Thực
+                                            Product Authenticated
                                         </p>
 
                                         <p>
-                                            <strong>Link Chứng Nhận:</strong> <a href={MOCK_CERT_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block truncate">{MOCK_CERT_URL}</a>
+                                            <strong>Certificate Link:</strong> <a href={MOCK_CERT_URL} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline block truncate">{MOCK_CERT_URL}</a>
                                         </p>
                                     </div>
 
                                     <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-white">
-                                        <Label className="mb-2">Mã QR Chứng Nhận</Label>
+                                        <Label className="mb-2">Certificate QR Code</Label>
                                         <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(MOCK_CERT_URL)}`}
                                              alt="QR Code"
                                              className="w-32 h-32 border p-1"
@@ -490,7 +496,7 @@ export default function CreateProduct() {
                                     </div>
                                 </div>
                                 <Button onClick={() => setStep(5)} className="w-full mt-4">
-                                    Tiếp tục đặt giá
+                                    Continue to pricing
                                     <ChevronRight className="h-4 w-4 ml-2" />
                                 </Button>
                             </div>
@@ -500,7 +506,7 @@ export default function CreateProduct() {
                         {/* Step 5: Pricing (Step 3 cũ) */}
                         {step === 5 && (
                             <div className="space-y-4">
-                                <h3 className="font-semibold text-lg">💰 Đặt Giá Khởi Điểm & Quy Tắc Đấu Giá</h3>
+                                <h3 className="font-semibold text-lg">Set Starting Price & Bidding Rules</h3>
                                 <div><Label htmlFor="startPrice">Starting Price ($)</Label><Input id="startPrice" type="number" value={formData.startPrice} onChange={(e) => setFormData({ ...formData, startPrice: Number(e.target.value) })} /></div>
                                 <div><Label htmlFor="bidStep">Bid Step ($)</Label><Input id="bidStep" type="number" value={formData.bidStep} onChange={(e) => setFormData({ ...formData, bidStep: Number(e.target.value) })} /></div>
                                 <div><Label htmlFor="buyNowPrice">Buy Now Price (Optional, $)</Label><Input id="buyNowPrice" type="number" value={formData.buyNowPrice} onChange={(e) => setFormData({ ...formData, buyNowPrice: Number(e.target.value) })} /></div>
@@ -511,7 +517,7 @@ export default function CreateProduct() {
                         {/* Step 6: Review (Step 4 cũ) */}
                         {step === 6 && (
                             <div className="space-y-4">
-                                <h3 className="font-semibold text-lg">📝 Review Your Product</h3>
+                                <h3 className="font-semibold text-lg">Review Your Product</h3>
                                 <Separator />
                                 <div className="space-y-2 p-4 border rounded-lg bg-card/50">
                                     <p><strong>Title:</strong> {formData.title}</p>
@@ -539,8 +545,8 @@ export default function CreateProduct() {
                                     onClick={handleNextStep}
                                     className="ml-auto"
                                     disabled={
-                                        (step === 2 && !requiredImagesUploaded) || // Chặn ở Step 2
-                                        (step === 3 && aiCheckStatus !== 'authentic') // Chặn ở Step 3
+                                        (step === 2 && !requiredImagesUploaded) || // Block at Step 2
+                                        (step === 3 && aiCheckStatus !== 'authentic') // Block at Step 3
                                     }
                                 >
                                     {step === 2 && !requiredImagesUploaded ? 'Upload required images' : 'Next'}
